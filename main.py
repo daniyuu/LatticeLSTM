@@ -4,7 +4,7 @@
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-07-06 11:08:27
 
-import _pickle as pickle
+import pickle as pickle
 import argparse
 import copy
 import gc
