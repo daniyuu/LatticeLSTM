@@ -352,11 +352,11 @@ def load_model_decode(model_dir, data, name, gpu, seg=True):
     print("Load Model from file: ", model_dir)
     model = SeqModel(data)
     ## load model need consider if the model trained in GPU and load in CPU, or vice versa
-    # if not gpu:
-    #     model.load_state_dict(torch.load(model_dir), map_location=lambda storage, loc: storage)
+    if not gpu:
+        model.load_state_dict(torch.load(model_dir), map_location=lambda storage, loc: storage)
     #     # model = torch.load(model_dir, map_location=lambda storage, loc: storage)
-    # else:
-    model.load_state_dict(torch.load(model_dir))
+    else:
+        model.load_state_dict(torch.load(model_dir))
     # model = torch.load(model_dir)
 
     print("Decode %s data ..." % (name))
@@ -412,7 +412,7 @@ if __name__ == '__main__':
     # bichar_emb = None
 
     print("CuDNN:", torch.backends.cudnn.enabled)
-    # gpu = False
+    gpu = False
     print("GPU available:", gpu)
     print("Status:", status)
     print("Seg: ", seg)
