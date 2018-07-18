@@ -344,7 +344,7 @@ class Data:
                 pre_su_item = predict_results[idx][idy].split('-')
                 if  pre_su_item[0] == 'S':
                     data['start'] = str(idy)
-                    data['end'] = str(idy)
+                    data['end'] = str(idy+1)
                     data['value'] = content_list[idx][0][idy].encode('utf-8')
                     data['entity'] = pre_su_item[1]
                     result.append(data)
@@ -354,11 +354,13 @@ class Data:
                     value= value + (content_list[idx][0][idy].encode('utf-8'))
                 if  pre_su_item[0] == 'E':
                     value= value + (content_list[idx][0][idy].encode('utf-8'))
-                    data['end'] = str(idy)
+                    data['end'] = str(idy+1)
                     data['value'] = value
                     data['entity'] = pre_su_item[1]
                     result.append(data)
                     data = {'start': '', 'end': "", 'value': '','entity':''}
                     value=''
+                if  pre_su_item[0] == 'I':
+                    value= value + (content_list[idx][0][idy].encode('utf-8'))
 
         return result
