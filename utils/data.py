@@ -360,5 +360,7 @@ class Data:
                     result.append(data)
                     data = {'start': '', 'end': "", 'value': '','entity':''}
                     value=''
+                if  pre_su_item[0] == 'I':
+                    value= value + (content_list[idx][0][idy].encode('utf-8'))
 
         return result
