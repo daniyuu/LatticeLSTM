@@ -354,6 +354,33 @@ def train(data, save_model_dir, seg=True):
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (test_cost, speed, acc))
         gc.collect()
 
+def load_model(model_dir, data, gpu):
+    data.HP_gpu = gpu
+    print
+    "Load Model from file: ", model_dir
+    model = SeqModel(data)
+    ## load model need consider if the model trained in GPU and load in CPU, or vice versa
+    if not gpu:
+        model.load_state_dict(torch.load(model_dir, map_location=lambda storage, loc: storage))
+        # model = torch.load(model_dir, map_location=lambda storage, loc: storage)
+    else:
+        model.load_state_dict(torch.load(model_dir))
+    # model = torch.load(model_dir)
+    return model
+
+def parse_text(model_dir, model, data, name, gpu, seg=True):
+    print("Decode %s data ..." % (name))
+    start_time = time.time()
+    speed, acc, p, r, f, pred_results = evaluate(data, model, name)
+    end_time = time.time()
+    time_cost = end_time - start_time
+    if seg:
+        print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
+            name, time_cost, speed, acc, p, r, f))
+    else:
+        print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
+
+    return pred_results
 
 def load_model_decode(model_dir, data, name, gpu, seg=True):
     data.HP_gpu = gpu
@@ -378,6 +405,7 @@ def load_model_decode(model_dir, data, name, gpu, seg=True):
             name, time_cost, speed, acc, p, r, f))
     else:
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
+
     return pred_results
 
 
