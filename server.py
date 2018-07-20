@@ -15,6 +15,7 @@ from tornado.options import define, options
 model_dir = "/app/data/CommonNER/common.0.model"
 dset_dir = "/app/data/CommonNER/common.dset"
 data = ""
+model=""
 
 
 tornado.options.define("port", default=5006, help="变量保存端口，默认8000",type = int)
@@ -50,12 +51,13 @@ class ParseHandler(tornado.web.RequestHandler):
         global dset_dir
         global gpu
         global model_dir
+        global data
+        global model
 
 
-        seg = False
-        data = main.load_data_setting(dset_dir)
+        seg = True
         data.generate_instance_with_gaz(sentence, 'sentence')
-        decode_results = main.load_model_decode(model_dir, data, 'raw', gpu, seg)
+        decode_results = main.parse_text(model_dir, model,data, 'raw', gpu, seg)
         result = data.write_decoded_results_back(decode_results, 'raw')
         result_output=js.dumps(result)
         self.set_status(200)
@@ -88,8 +90,11 @@ def initialize():
     global dset_dir
     global data 
     global gpu
-   # data = main.load_data_setting(dset_dir)
+    global model
+
+    data = main.load_data_setting(dset_dir)
     gpu = torch.cuda.is_available()
+    model = main.load_model(model_dir, data, gpu)
     return
 
 if __name__ == "__main__":
