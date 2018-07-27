@@ -3,19 +3,22 @@ import tornado.ioloop
 import tornado.web
 import tornado.options
 import tornado.httpserver 
+import tornado.gen 
 
 import argparse
 import torch
 import main
+import serverCall
 import json as js
 import copy
 from tornado.options import define, options
 
 
-model_dir = "/app/data/CommonNER/common.0.model"
-dset_dir = "/app/data/CommonNER/common.dset"
+model_dir = ""
+dset_dir = ""
 data = ""
 model=""
+gpu =""
 
 
 tornado.options.define("port", default=5006, help="变量保存端口，默认8000",type = int)
@@ -44,22 +47,18 @@ class ParseHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("parse data")
 
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def post(self):
-        getData = js.loads(self.request.body.decode('utf-8'))  
-        sentence = getData["q"]
-        
         global dset_dir
         global gpu
         global model_dir
         global data
         global model
-
-
-        seg = True
-        data.generate_instance_with_gaz(sentence, 'sentence')
-        decode_results = main.parse_text(model_dir, model,data, 'raw', gpu, seg)
-        result = data.write_decoded_results_back(decode_results, 'raw')
-        result_output=js.dumps(result)
+        getData = js.loads(self.request.body.decode('utf-8'))  
+        sentence = getData["q"]
+        model_dir_new = getData["model_dir"]
+        model_dir,dset_dir,data,model,result_output = yield serverCall.parse(sentence,model_dir_new,dset_dir,gpu,model_dir,data,model)
         self.set_status(200)
         self.finish(result_output)
 
@@ -73,9 +72,27 @@ class trainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("train data")
 
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def post(self):
+        getData = js.loads(self.request.body.decode('utf-8')) 
+        
+        data = getData["data"]
+        
+        save_model_dir = "/app/data/" + getData["save_model_dir"] + "/" + getData["save_model_dir"] + ".train"
+        train_file = "/app/data/" + getData["save_model_dir"]  + "/" + getData["save_model_dir"] + ".train.char"
+        test_file = "/app/data/" + getData["save_model_dir"]  + "/" + getData["save_model_dir"] + ".test.char"
+        dev_file = "/app/data/" + getData["save_model_dir"]  + "/" + getData["save_model_dir"] + ".dev.char"
+        char_emb = None #getData["char_emb"]
+        bichar_emb = None #getData["bichar_emb"]
+        gaz_file = None #getData["gaz_file"]
+        seg = True
+        global gpu
+
+        serverCall.mkdir("/app/data/" + getData["save_model_dir"])
+        result_output = yield serverCall.train(data,train_file,gaz_file,dev_file,test_file,char_emb,bichar_emb,gpu,save_model_dir,seg)
         self.set_status(200)
-        self.write("train data")
+        self.write(result_output)
 
 def make_app():
     global data 
@@ -87,14 +104,9 @@ def make_app():
 
 def initialize():
     
-    global dset_dir
-    global data 
     global gpu
-    global model
-
-    data = main.load_data_setting(dset_dir)
     gpu = torch.cuda.is_available()
-    model = main.load_model(model_dir, data, gpu)
+
     return
 
 if __name__ == "__main__":

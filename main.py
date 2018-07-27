@@ -242,14 +242,12 @@ def batchify_with_label(input_batch_list, gpu, volatile_flag=False):
 
 
 def train(data, save_model_dir, seg=True):
-    print
-    "Training model..."
+    print("Training model...")
     data.show_data_summary()
     save_data_name = save_model_dir + ".dset"
     save_data_setting(data, save_data_name)
     model = SeqModel(data)
-    print
-    "finished built model."
+    print("finished built model.")
     loss_function = nn.NLLLoss()
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = optim.SGD(parameters, lr=data.HP_lr, momentum=data.HP_momentum)
@@ -354,6 +352,7 @@ def train(data, save_model_dir, seg=True):
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (test_cost, speed, acc))
         gc.collect()
 
+
 def load_model(model_dir, data, gpu):
     data.HP_gpu = gpu
     print
@@ -368,7 +367,7 @@ def load_model(model_dir, data, gpu):
     # model = torch.load(model_dir)
     return model
 
-def parse_text(model_dir, model, data, name, gpu, seg=True):
+def parse_text(model, data, name, gpu, seg=True):
     print("Decode %s data ..." % (name))
     start_time = time.time()
     speed, acc, p, r, f, pred_results = evaluate(data, model, name)

@@ -328,6 +328,7 @@ class Data:
             content_list = self.train_texts
         else:
             print("Error: illegal name during writing predict result, name should be within train/dev/test/raw !")
+
         assert (sent_num == len(content_list))
         result =[]
      #   for idx in range(sent_num):
@@ -364,3 +365,58 @@ class Data:
                     value= value + (content_list[idx][0][idy].encode('utf-8'))
 
         return result
+
+    def write_http_data(self, output_file, inputData):
+        fout = open(output_file, 'w')
+        get_num = len(inputData)
+
+        for idx in range(get_num):
+            text = inputData[idx]["text"]
+            entities = inputData[idx]["entities"]
+            print(text.encode('utf-8'))
+            for entity in entities:
+                print(entity['value'].encode('utf-8'))
+            idText = 1
+            inWord = False
+            tagReady = False
+            entity_name =''
+            for Text in text:
+                ## content_list[idx] is a list with [word, char, label] 
+                tagReady = False
+                
+                for entity in entities:
+                    if not inWord:
+                        if entity['start']+1 == entity['end'] and entity['end'] == idText:
+                            print(idText)
+                            print(inWord)
+                            fout.write(Text.encode('utf-8') + " " + "S-"+ entity['entity'].encode('utf-8') +'\n')
+                            tagReady = True
+                            break
+                        if entity['start']+1 == idText:
+                            print(idText)
+                            print(inWord)
+                            fout.write(Text.encode('utf-8') + " " + "B-"+ entity['entity'].encode('utf-8') + '\n')
+                            tagReady = True
+                            inWord = True
+                            entity_name = entity['entity'].encode('utf-8')
+                            break
+                    else:
+                        if entity['end'] == idText:
+                            print(idText)
+                            print(inWord)
+                            fout.write(Text.encode('utf-8') + " " + "E-"+ entity_name + '\n')
+                            tagReady = True
+                            inWord = False
+                            break
+
+                if not tagReady:
+                    if not inWord:
+                        fout.write(Text.encode('utf-8') + " " + "O"+ '\n')
+                    else:
+                        fout.write(Text.encode('utf-8') + " " + "I-"+ entity_name +'\n')
+
+                idText=idText+1
+            fout.write('\n')
+        fout.close()
+
+        print("Predict input data has been written into file. %s" % ( output_file))
