@@ -43,7 +43,8 @@ class ParseHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods','POST,GET,OPTIONS')
         self.set_header("Content-Type","application/json;charset=utf-8")
         
-
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def get(self):
         self.write("parse data")
 
@@ -69,6 +70,8 @@ class trainHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods','POST,GET,OPTIONS')
         self.set_header("Content-Type","application/json;charset=utf-8")
 
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def get(self):
         self.write("train data")
 

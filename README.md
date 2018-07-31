@@ -39,12 +39,54 @@ Character embeddings: [gigaword_chn.all.a2b.uni.ite50.vec](https://pan.baidu.com
 
 Word(Lattice) embeddings: [ctb.50d.vec](https://pan.baidu.com/s/1pLO6T9D)
 
+Predefined Model:
+====
+The CommonNER Model: 
+
 How to run the code?
 ====
 1. Download the character embeddings and word embeddings and put them in the `data` folder.
 2. Modify the `run_main.py` or `run_demo.py` by adding your train/dev/test file directory.
 3. `sh run_main.py` or `sh run_demo.py`
 
+How to run the server?
+====
+1. Download the predefined Model and put them in the `data` folder.
+2. Run `python server.py --port=5002`.
+3. Now you can access the Lattice server, example:
+	url:http://localhost:5002/parse;
+	Hearder: Content-Type:application/x-www-form-urlencoded;
+	raw:
+	{
+		"model_dir":"CommonNER",
+		"q":"我想从南京到上海"
+	}
+
+	url:http://localhost:5002/train;
+	Hearder: Content-Type:application/x-www-form-urlencoded;
+	raw:
+	{
+		"save_model_dir" : "mytest",
+		"data":[
+				{	"text" : "我想去北京",
+					"entities":[{
+						"start":3,
+						"end":5,
+						"value":"北京",
+						"entity":"test",
+						"entity_id":1}]
+				},
+				{
+					"text" : "我想去上海",
+					"entities":[{
+						"start":3,
+						"end":5,
+						"value":"上海",
+						"entity":"test",
+						"entity_id":1}]
+				}
+			]
+	}
 
 Resume NER data 
 ====
