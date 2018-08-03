@@ -4,6 +4,7 @@
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-01-29 15:26:51
 import sys
+import math
 
 from alphabet import Alphabet
 from functions import *
@@ -331,14 +332,15 @@ class Data:
 
         assert (sent_num == len(content_list))
         result =[]
-     #   for idx in range(sent_num):
-     #       sent_length = len(predict_results[idx])
-     #       for idy in range(sent_length):
-     #           ## content_list[idx] is a list with [word, char, label]
-     #           result.append(content_list[idx][0][idy].encode('utf-8') + " " + predict_results[idx][idy] + '\n')
+        for idx in range(sent_num):
+            sent_length = len(predict_results[idx])
+            for idy in range(sent_length):
+                ## content_list[idx] is a list with [word, char, label]
+                print(content_list[idx][0][idy].encode('utf-8') + " " + predict_results[idx][idy] + '\n')
         
         for idx in range(sent_num):
             sent_length = len(predict_results[idx])
+
             data = {'start': '', 'end': "", 'value': '','entity':''}
             value=''
             for idy in range(sent_length):
@@ -366,16 +368,29 @@ class Data:
 
         return result
 
-    def write_http_data(self, output_file, inputData):
+    def write_http_data(self, output_file, inputData, name):
         fout = open(output_file, 'w')
         get_num = len(inputData)
 
-        for idx in range(get_num):
+        start = 0
+        numOfParagram = int(math.ceil(get_num / 5.0))
+        num_start_sentence = start
+        num_end_sentence = numOfParagram
+
+        if name == "test":
+            num_start_sentence = 0
+            num_end_sentence = numOfParagram
+        elif name == "dev":
+            num_start_sentence = numOfParagram
+            num_end_sentence = numOfParagram*2
+        elif name == "train":
+            num_start_sentence = numOfParagram*2
+            num_end_sentence = get_num
+
+        for idx in range(num_start_sentence,num_end_sentence):
             text = inputData[idx]["text"]
             entities = inputData[idx]["entities"]
-            print(text.encode('utf-8'))
-            for entity in entities:
-                print(entity['value'].encode('utf-8'))
+
             idText = 1
             inWord = False
             tagReady = False
@@ -387,14 +402,12 @@ class Data:
                 for entity in entities:
                     if not inWord:
                         if entity['start']+1 == entity['end'] and entity['end'] == idText:
-                            print(idText)
-                            print(inWord)
+
                             fout.write(Text.encode('utf-8') + " " + "S-"+ entity['entity'].encode('utf-8') +'\n')
                             tagReady = True
                             break
                         if entity['start']+1 == idText:
-                            print(idText)
-                            print(inWord)
+
                             fout.write(Text.encode('utf-8') + " " + "B-"+ entity['entity'].encode('utf-8') + '\n')
                             tagReady = True
                             inWord = True
@@ -402,8 +415,7 @@ class Data:
                             break
                     else:
                         if entity['end'] == idText:
-                            print(idText)
-                            print(inWord)
+
                             fout.write(Text.encode('utf-8') + " " + "E-"+ entity_name + '\n')
                             tagReady = True
                             inWord = False
@@ -420,3 +432,6 @@ class Data:
         fout.close()
 
         print("Predict input data has been written into file. %s" % ( output_file))
+
+       
+        

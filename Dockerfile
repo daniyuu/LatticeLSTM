@@ -18,6 +18,7 @@ WORKDIR /app
 
 RUN pip install tornado
 RUN pip install http://download.pytorch.org/whl/cu90/torch-0.3.0-cp27-cp27mu-linux_x86_64.whl
+RUN pip install futures
 
 COPY . /app
 
