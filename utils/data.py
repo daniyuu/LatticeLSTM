@@ -4,6 +4,7 @@
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-01-29 15:26:51
 import sys
+import math
 
 from alphabet import Alphabet
 from functions import *
@@ -328,16 +329,18 @@ class Data:
             content_list = self.train_texts
         else:
             print("Error: illegal name during writing predict result, name should be within train/dev/test/raw !")
+
         assert (sent_num == len(content_list))
         result =[]
-     #   for idx in range(sent_num):
-     #       sent_length = len(predict_results[idx])
-     #       for idy in range(sent_length):
-     #           ## content_list[idx] is a list with [word, char, label]
-     #           result.append(content_list[idx][0][idy].encode('utf-8') + " " + predict_results[idx][idy] + '\n')
+        for idx in range(sent_num):
+            sent_length = len(predict_results[idx])
+            for idy in range(sent_length):
+                ## content_list[idx] is a list with [word, char, label]
+                print(content_list[idx][0][idy].encode('utf-8') + " " + predict_results[idx][idy] + '\n')
         
         for idx in range(sent_num):
             sent_length = len(predict_results[idx])
+
             data = {'start': '', 'end': "", 'value': '','entity':''}
             value=''
             for idy in range(sent_length):
@@ -364,3 +367,71 @@ class Data:
                     value= value + (content_list[idx][0][idy].encode('utf-8'))
 
         return result
+
+    def write_http_data(self, output_file, inputData, name):
+        fout = open(output_file, 'w')
+        get_num = len(inputData)
+
+        start = 0
+        numOfParagram = int(math.ceil(get_num / 5.0))
+        num_start_sentence = start
+        num_end_sentence = numOfParagram
+
+        if name == "test":
+            num_start_sentence = 0
+            num_end_sentence = numOfParagram
+        elif name == "dev":
+            num_start_sentence = numOfParagram
+            num_end_sentence = numOfParagram*2
+        elif name == "train":
+            num_start_sentence = numOfParagram*2
+            num_end_sentence = get_num
+
+        for idx in range(num_start_sentence,num_end_sentence):
+            text = inputData[idx]["text"]
+            entities = inputData[idx]["entities"]
+
+            idText = 1
+            inWord = False
+            tagReady = False
+            entity_name =''
+            for Text in text:
+                ## content_list[idx] is a list with [word, char, label] 
+                tagReady = False
+                
+                for entity in entities:
+                    if not inWord:
+                        if entity['start']+1 == entity['end'] and entity['end'] == idText:
+
+                            fout.write(Text.encode('utf-8') + " " + "S-"+ entity['entity'].encode('utf-8') +'\n')
+                            tagReady = True
+                            break
+                        if entity['start']+1 == idText:
+
+                            fout.write(Text.encode('utf-8') + " " + "B-"+ entity['entity'].encode('utf-8') + '\n')
+                            tagReady = True
+                            inWord = True
+                            entity_name = entity['entity'].encode('utf-8')
+                            break
+                    else:
+                        if entity['end'] == idText:
+
+                            fout.write(Text.encode('utf-8') + " " + "E-"+ entity_name + '\n')
+                            tagReady = True
+                            inWord = False
+                            break
+
+                if not tagReady:
+                    if not inWord:
+                        fout.write(Text.encode('utf-8') + " " + "O"+ '\n')
+                    else:
+                        fout.write(Text.encode('utf-8') + " " + "I-"+ entity_name +'\n')
+
+                idText=idText+1
+            fout.write('\n')
+        fout.close()
+
+        print("Predict input data has been written into file. %s" % ( output_file))
+
+       
+        
