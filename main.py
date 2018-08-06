@@ -245,6 +245,7 @@ def train(data, save_model_dir, seg=True):
     print("Training model...")
     data.show_data_summary()
     save_data_name = save_model_dir + ".dset"
+
     save_data_setting(data, save_data_name)
     model = SeqModel(data)
     print("finished built model.")
