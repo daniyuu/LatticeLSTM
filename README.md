@@ -49,7 +49,8 @@ How to run the code?
 Resume NER data 
 ====
 Crawled from the Sina Finance, it includes the resumes of senior executives from listed companies in the Chinese stock market. Details can be found in our paper.
-
+ 
+ 
 
 Cite: 
 ========
