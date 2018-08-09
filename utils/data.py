@@ -3,19 +3,21 @@
 # @Date:   2017-06-14 17:34:32
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-01-29 15:26:51
-import sys
+import logging
 import math
+import sys
 
 from alphabet import Alphabet
 from analysis.utils.logTool import addLogSectionMark
 from functions import *
 from gazetteer import Gazetteer
-import logging
 
 START = "</s>"
 UNKNOWN = "</unk>"
 PADDING = "</pad>"
 NULLKEY = "-null-"
+
+logger = logging.getLogger(__name__)
 
 
 class Data:
@@ -122,45 +124,45 @@ class Data:
         print("     Hyperpara fix gaz emb: %s" % (self.HP_fix_gaz_emb))
         print("     Hyperpara    use_char: %s" % (self.HP_use_char))
 
-        logging.info("     Tag          scheme: %s" % (self.tagScheme))
-        logging.info("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
-        logging.info("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
-        logging.info("     Number   normalized: %s" % (self.number_normalized))
-        logging.info("     Use          bigram: %s" % (self.use_bigram))
-        logging.info("     Word  alphabet size: %s" % (self.word_alphabet_size))
-        logging.info("     Biword alphabet size: %s" % (self.biword_alphabet_size))
-        logging.info("     Char  alphabet size: %s" % (self.char_alphabet_size))
-        logging.info("     Gaz   alphabet size: %s" % (self.gaz_alphabet.size()))
-        logging.info("     Label alphabet size: %s" % (self.label_alphabet_size))
-        logging.info("     Word embedding size: %s" % (self.word_emb_dim))
-        logging.info("     Biword embedding size: %s" % (self.biword_emb_dim))
-        logging.info("     Char embedding size: %s" % (self.char_emb_dim))
-        logging.info("     Gaz embedding size: %s" % (self.gaz_emb_dim))
-        logging.info("     Norm     word   emb: %s" % (self.norm_word_emb))
-        logging.info("     Norm     biword emb: %s" % (self.norm_biword_emb))
-        logging.info("     Norm     gaz    emb: %s" % (self.norm_gaz_emb))
-        logging.info("     Norm   gaz  dropout: %s" % (self.gaz_dropout))
-        logging.info("     Train instance number: %s" % (len(self.train_texts)))
-        logging.info("     Dev   instance number: %s" % (len(self.dev_texts)))
-        logging.info("     Test  instance number: %s" % (len(self.test_texts)))
-        logging.info("     Raw   instance number: %s" % (len(self.raw_texts)))
-        logging.info("     Hyperpara  iteration: %s" % (self.HP_iteration))
-        logging.info("     Hyperpara  batch size: %s" % (self.HP_batch_size))
-        logging.info("     Hyperpara          lr: %s" % (self.HP_lr))
-        logging.info("     Hyperpara    lr_decay: %s" % (self.HP_lr_decay))
-        logging.info("     Hyperpara     HP_clip: %s" % (self.HP_clip))
-        logging.info("     Hyperpara    momentum: %s" % (self.HP_momentum))
-        logging.info("     Hyperpara  hidden_dim: %s" % (self.HP_hidden_dim))
-        logging.info("     Hyperpara     dropout: %s" % (self.HP_dropout))
-        logging.info("     Hyperpara  lstm_layer: %s" % (self.HP_lstm_layer))
-        logging.info("     Hyperpara      bilstm: %s" % (self.HP_bilstm))
-        logging.info("     Hyperpara         GPU: %s" % (self.HP_gpu))
-        logging.info("     Hyperpara     use_gaz: %s" % (self.HP_use_gaz))
-        logging.info("     Hyperpara fix gaz emb: %s" % (self.HP_fix_gaz_emb))
+        logger.info("     Tag          scheme: %s" % (self.tagScheme))
+        logger.info("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
+        logger.info("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
+        logger.info("     Number   normalized: %s" % (self.number_normalized))
+        logger.info("     Use          bigram: %s" % (self.use_bigram))
+        logger.info("     Word  alphabet size: %s" % (self.word_alphabet_size))
+        logger.info("     Biword alphabet size: %s" % (self.biword_alphabet_size))
+        logger.info("     Char  alphabet size: %s" % (self.char_alphabet_size))
+        logger.info("     Gaz   alphabet size: %s" % (self.gaz_alphabet.size()))
+        logger.info("     Label alphabet size: %s" % (self.label_alphabet_size))
+        logger.info("     Word embedding size: %s" % (self.word_emb_dim))
+        logger.info("     Biword embedding size: %s" % (self.biword_emb_dim))
+        logger.info("     Char embedding size: %s" % (self.char_emb_dim))
+        logger.info("     Gaz embedding size: %s" % (self.gaz_emb_dim))
+        logger.info("     Norm     word   emb: %s" % (self.norm_word_emb))
+        logger.info("     Norm     biword emb: %s" % (self.norm_biword_emb))
+        logger.info("     Norm     gaz    emb: %s" % (self.norm_gaz_emb))
+        logger.info("     Norm   gaz  dropout: %s" % (self.gaz_dropout))
+        logger.info("     Train instance number: %s" % (len(self.train_texts)))
+        logger.info("     Dev   instance number: %s" % (len(self.dev_texts)))
+        logger.info("     Test  instance number: %s" % (len(self.test_texts)))
+        logger.info("     Raw   instance number: %s" % (len(self.raw_texts)))
+        logger.info("     Hyperpara  iteration: %s" % (self.HP_iteration))
+        logger.info("     Hyperpara  batch size: %s" % (self.HP_batch_size))
+        logger.info("     Hyperpara          lr: %s" % (self.HP_lr))
+        logger.info("     Hyperpara    lr_decay: %s" % (self.HP_lr_decay))
+        logger.info("     Hyperpara     HP_clip: %s" % (self.HP_clip))
+        logger.info("     Hyperpara    momentum: %s" % (self.HP_momentum))
+        logger.info("     Hyperpara  hidden_dim: %s" % (self.HP_hidden_dim))
+        logger.info("     Hyperpara     dropout: %s" % (self.HP_dropout))
+        logger.info("     Hyperpara  lstm_layer: %s" % (self.HP_lstm_layer))
+        logger.info("     Hyperpara      bilstm: %s" % (self.HP_bilstm))
+        logger.info("     Hyperpara         GPU: %s" % (self.HP_gpu))
+        logger.info("     Hyperpara     use_gaz: %s" % (self.HP_use_gaz))
+        logger.info("     Hyperpara fix gaz emb: %s" % (self.HP_fix_gaz_emb))
         print("     Hyperpara    use_char: %s" % (self.HP_use_char))
         if self.HP_use_char:
             print("             Char_features: %s" % (self.char_features))
-            logging.info("             Char_features: %s" % (self.char_features))
+            logger.info("             Char_features: %s" % (self.char_features))
         print("DATA SUMMARY END.")
         sys.stdout.flush()
 

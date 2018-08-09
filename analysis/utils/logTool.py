@@ -1,6 +1,8 @@
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def addLogSectionMark(msg):
-    logging.info("======{0}======".format(msg))
+    logger.info("======{0}======".format(msg))
     return
