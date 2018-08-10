@@ -31,7 +31,7 @@ torch.manual_seed(seed_num)
 np.random.seed(seed_num)
 
 logging.basicConfig(filename="./analysis/log/{0}.txt".format(date.today().isoformat()),
-                    format='%(asctime)s *** %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+                    format='%(asctime)s *** %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
