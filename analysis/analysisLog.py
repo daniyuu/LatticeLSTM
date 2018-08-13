@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 import pygal
 
@@ -32,7 +33,7 @@ def analysis_overall(file_name):
     line_chart.add("r", y_test_r)
     line_chart.add("f", y_test_f)
     line_chart.render_to_file(result_folder_path + 'Overall_{0}.svg'.format(file_name))
-    return
+    return y_test_p, y_test_r, y_test_f
 
 
 def analysis_acc(file_name):
@@ -56,4 +57,37 @@ def analysis_acc(file_name):
     return
 
 
-analysis_overall('2018-08-10')
+def compare_logs(*file_names):
+    p_chart = pygal.Line()
+    p_chart.title = "Precious compare"
+
+    r_chart = pygal.Line()
+    r_chart.title = "Recall compare"
+
+    f_chart = pygal.Line()
+    f_chart.title = "F1 Score compare"
+
+    for file_name in file_names:
+        p, r, f = analysis_overall(file_name)
+        p_chart.add(file_name, p)
+        r_chart.add(file_name, r)
+        f_chart.add(file_name, f)
+
+    p_chart.render_to_file(
+        result_folder_path + 'Compare_{0}_P_{1}.svg'.format(date.today().isoformat(), len(file_names)))
+    r_chart.render_to_file(
+        result_folder_path + 'Compare_{0}_R_{0}.svg'.format(date.today().isoformat(), len(file_names)))
+    f_chart.render_to_file(
+        result_folder_path + 'Compare_{0}_F_{0}.svg'.format(date.today().isoformat(), len(file_names)))
+    return
+
+
+def analysis(file_name):
+    analysis_overall(file_name)
+    analysis_acc(file_name)
+    return
+
+
+# analysis('2018-08-10')
+
+compare_logs('2018-08-10')
