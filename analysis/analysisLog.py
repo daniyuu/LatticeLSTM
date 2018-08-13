@@ -1,28 +1,22 @@
-import plotly
-import plotly.plotly as py
-import plotly.graph_objs as go
+import pygal
 
-plotly.tools.set_credentials_file(username='daniyuu', api_key='6iHnQZtDeTu9vNgIbipd')
 
-logFile = open('./log/2018-08-10.txt', 'r')
+def analysis_acc(file_name):
+    logFile = open('./log/{0}.txt'.format(file_name), 'r')
 
-index = 0
-x = []
-y = []
-for line in logFile.readlines():
-    if "Instance" in line:
-        index += 1
-        acc = line.split('=')[1].split('\n')[0]
-        x.append(index)
-        y.append(acc)
-        # print(acc)
-        # print(line)
-print(x)
-print(y)
-print(len(x))
-print(len(y))
+    index = 0
+    x = []
+    y = []
+    for line in logFile.readlines():
+        if "Instance" in line:
+            index += 1
+            acc = line.split('=')[1].split('\n')[0]
+            x.append(index)
+            y.append(float(acc))
 
-trace = go.Scatter(x=x, y=y, mode='line', name='acc')
-
-data = [trace]
-py.plot(data, filename="acc line chat", auto_open=True)
+    line_chart = pygal.Line()
+    line_chart.title = "Lattice Acc"
+    # line_chart.x_labels = x
+    line_chart.add("Acc", y)
+    line_chart.render_to_file('{0}.svg'.format(file_name))
+    return
