@@ -16,24 +16,28 @@ def analysis_overall(file_name):
     y_test_p = []
     y_test_r = []
     y_test_f = []
+    y_test_acc = []
     for line in logFile.readlines():
         if "*** Test: " in line:
             items = line.split('; ')
             f = float(items[-1].split(': ')[1])
             r = float(items[-2].split(': ')[1])
             p = float(items[-3].split(': ')[1])
+            acc = float(items[-4].split(': ')[1])
             y_test_f.append(f)
             y_test_r.append(r)
             y_test_p.append(p)
+            y_test_acc.append(acc)
 
     line_chart = pygal.Line()
     line_chart.title = "Overall performance"
     # line_chart.x_labels = x
+    line_chart.add("acc", y_test_acc)
     line_chart.add("p", y_test_p)
     line_chart.add("r", y_test_r)
     line_chart.add("f", y_test_f)
     line_chart.render_to_file(result_folder_path + 'Overall_{0}.svg'.format(file_name))
-    return y_test_p, y_test_r, y_test_f
+    return y_test_p, y_test_r, y_test_f, y_test_acc
 
 
 def analysis_acc(file_name):
@@ -67,18 +71,24 @@ def compare_logs(*file_names):
     f_chart = pygal.Line()
     f_chart.title = "F1 Score compare"
 
+    acc_chart = pygal.Line()
+    acc_chart.title = "Acc Score compare"
+
     for file_name in file_names:
-        p, r, f = analysis_overall(file_name)
+        p, r, f, acc = analysis_overall(file_name)
+        acc_chart.add(file_name, acc)
         p_chart.add(file_name, p)
         r_chart.add(file_name, r)
         f_chart.add(file_name, f)
 
+    acc_chart.render_to_file(
+        result_folder_path + 'Compare_{0}_Acc_{1}.svg'.format(date.today().isoformat(), len(file_names)))
     p_chart.render_to_file(
         result_folder_path + 'Compare_{0}_P_{1}.svg'.format(date.today().isoformat(), len(file_names)))
     r_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_R_{0}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_R_{1}.svg'.format(date.today().isoformat(), len(file_names)))
     f_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_F_{0}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_F_{1}.svg'.format(date.today().isoformat(), len(file_names)))
     return
 
 
