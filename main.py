@@ -503,7 +503,7 @@ if __name__ == '__main__':
         data = Data()
         data.HP_gpu = gpu
         data.HP_use_char = False
-        data.HP_batch_size = 1
+        data.HP_batch_size = 50
         data.use_bigram = True
         data.gaz_dropout = 0.5
         data.norm_gaz_emb = False
