@@ -16,6 +16,7 @@ START = "</s>"
 UNKNOWN = "</unk>"
 PADDING = "</pad>"
 NULLKEY = "-null-"
+PUNCTUATION_MARK = "#"
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class Data:
         self.MAX_SENTENCE_LENGTH = 250
         self.MAX_WORD_LENGTH = -1
         self.number_normalized = True
+        self.punctuation_filter = True
         self.norm_word_emb = True
         self.norm_biword_emb = True
         self.norm_gaz_emb = False
@@ -91,6 +93,7 @@ class Data:
         print("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
         print("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
         print("     Number   normalized: %s" % (self.number_normalized))
+        print("     Punctuation  filter: %s" % (self.punctuation_filter))
         print("     Use          bigram: %s" % (self.use_bigram))
         print("     Word  alphabet size: %s" % (self.word_alphabet_size))
         print("     Biword alphabet size: %s" % (self.biword_alphabet_size))
@@ -203,10 +206,18 @@ class Data:
                 label = pairs[-1]
                 self.label_alphabet.add(label)
                 self.word_alphabet.add(word)
-                if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
-                    biword = word + in_lines[idx + 1].strip().split()[0].decode('utf-8')
+                if word != PUNCTUATION_MARK:
+                    if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
+                        nextWord = in_lines[idx + 1].strip().split()[0].decode('utf-8')
+                        if nextWord == PUNCTUATION_MARK:
+                            biword = word + NULLKEY
+                        else:
+                            biword = word + in_lines[idx + 1].strip().split()[0].decode('utf-8')
+                    else:
+                        biword = word + NULLKEY
                 else:
-                    biword = word + NULLKEY
+                    continue
+
                 self.biword_alphabet.add(biword)
                 for char in word:
                     self.char_alphabet.add(char)
