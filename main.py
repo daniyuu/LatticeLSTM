@@ -261,7 +261,7 @@ def train(data, save_model_dir, seg=True):
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = optim.SGD(parameters, lr=data.HP_lr, momentum=data.HP_momentum)
     best_dev = -1
-    data.HP_iteration = 1
+    data.HP_iteration = 50
     ## start training
     for idx in range(data.HP_iteration):
         epoch_start = time.time()
@@ -503,7 +503,7 @@ if __name__ == '__main__':
         data = Data()
         data.HP_gpu = gpu
         data.HP_use_char = False
-        data.HP_batch_size = 50
+        data.HP_batch_size = 1
         data.use_bigram = True
         data.gaz_dropout = 0.5
         data.norm_gaz_emb = False
