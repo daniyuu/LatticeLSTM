@@ -82,13 +82,13 @@ def compare_logs(*file_names):
         f_chart.add(file_name, f)
 
     acc_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_Acc_{1}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_Acc_{1}.svg'.format(date.today().isoformat(), '_'.join(file_names)))
     p_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_P_{1}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_P_{1}.svg'.format(date.today().isoformat(), '_'.join(file_names)))
     r_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_R_{1}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_R_{1}.svg'.format(date.today().isoformat(), '_'.join(file_names)))
     f_chart.render_to_file(
-        result_folder_path + 'Compare_{0}_F_{1}.svg'.format(date.today().isoformat(), len(file_names)))
+        result_folder_path + 'Compare_{0}_F_{1}.svg'.format(date.today().isoformat(), '_'.join(file_names)))
     return
 
 
@@ -98,6 +98,9 @@ def analysis(file_name):
     return
 
 
+#
 # analysis('2018-08-10')
-
-compare_logs('2018-08-10')
+# analysis('2018-08-13')
+analysis('2018-08-17')
+# compare_logs('2018-08-10', '2018-08-13')
+compare_logs('2018-08-10', '2018-08-13', '2018-08-17')

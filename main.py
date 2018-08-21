@@ -466,7 +466,7 @@ if __name__ == '__main__':
     gpu = torch.cuda.is_available()
 
     char_emb = "data/gigaword_chn.all.a2b.uni.ite50.vec"
-    bichar_emb = None
+    bichar_emb = "data/gigaword_chn.all.a2b.bi.ite50.vec"
     gaz_file = "data/ctb.50d.vec"
     # gaz_file = None
     # char_emb = None

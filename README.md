@@ -122,3 +122,21 @@ Please cite our ACL 2018 paper:
      booktitle={Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (ACL)},
      year={2018}  
     }
+    
+Code
+========
+
+Pre-progress
+1. Alphabet
+
+        self.word_alphabet, one word one item
+        self.biword_alphabet, every two close words are one item
+        self.char_alphabet, it same with word_alphabet when the language is Chinese
+        self.label_alphabet, memory the laebl
+        
+        char_emb = "data/gigaword_chn.all.a2b.uni.ite50.vec", character-level embedding
+        
+2. Gaz file and gaz alphabet 
+
+        gaz_file = "data/ctb.50d.vec", lattice dictionary
+        gaz_alphabet, create a alphabel for training dataset by using lattice dictionary 
