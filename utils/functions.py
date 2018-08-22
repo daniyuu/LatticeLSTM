@@ -6,8 +6,10 @@
 import string
 
 import numpy as np
+import logging
 
 NULLKEY = "-null-"
+logger = logging.getLogger(__name__)
 
 
 def normalize_word(word):
@@ -409,6 +411,8 @@ def build_pretrain_embedding(embedding_path, word_alphabet, embedd_dim=100, norm
             pretrain_emb[index, :] = np.random.uniform(-scale, scale, [1, embedd_dim])
             not_match += 1
     pretrained_size = len(embedd_dict)
+    logger.info("Embedding: pretrain word:%s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s" % (
+        pretrained_size, perfect_match, case_match, not_match, (not_match + 0.) / word_alphabet.size()))
     print("Embedding:\n     pretrain word:%s, prefect match:%s, case_match:%s, oov:%s, oov%%:%s" % (
         pretrained_size, perfect_match, case_match, not_match, (not_match + 0.) / word_alphabet.size()))
     return pretrain_emb, embedd_dim
