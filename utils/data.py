@@ -3,7 +3,6 @@
 # @Date:   2017-06-14 17:34:32
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-01-29 15:26:51
-import logging
 import math
 import sys
 
@@ -206,17 +205,11 @@ class Data:
                 label = pairs[-1]
                 self.label_alphabet.add(label)
                 self.word_alphabet.add(word)
-                if word != PUNCTUATION_MARK:
-                    if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
-                        nextWord = in_lines[idx + 1].strip().split()[0].decode('utf-8')
-                        if nextWord == PUNCTUATION_MARK:
-                            biword = word + NULLKEY
-                        else:
-                            biword = word + in_lines[idx + 1].strip().split()[0].decode('utf-8')
-                    else:
-                        biword = word + NULLKEY
+
+                if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
+                    biword = word + in_lines[idx + 1].strip().split()[0].decode('utf-8')
                 else:
-                    continue
+                    biword = word + NULLKEY
 
                 self.biword_alphabet.add(biword)
                 for char in word:
@@ -450,7 +443,7 @@ class Data:
             tagReady = False
             entity_name = ''
             for Text in text:
-                ## content_list[idx] is a list with [word, char, label] 
+                ## content_list[idx] is a list with [word, char, label]
                 tagReady = False
 
                 for entity in entities:

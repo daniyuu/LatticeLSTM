@@ -101,6 +101,6 @@ def analysis(file_name):
 #
 # analysis('2018-08-10')
 # analysis('2018-08-13')
-analysis('2018-08-17')
-# compare_logs('2018-08-10', '2018-08-13')
-compare_logs('2018-08-10', '2018-08-13', '2018-08-17')
+# analysis('2018-08-21')
+
+compare_logs('2018-08-17', '2018-08-21')
