@@ -502,9 +502,9 @@ if __name__ == '__main__':
     if status == 'train':
         data = Data()
         data.HP_gpu = gpu
-        data.HP_use_char = True
+        data.HP_use_char = False
         data.HP_batch_size = 1
-        data.use_bigram = True
+        data.use_bigram = False
         data.gaz_dropout = 0.5
         data.norm_gaz_emb = False
         data.HP_fix_gaz_emb = False
