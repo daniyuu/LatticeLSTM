@@ -1,2 +1,4 @@
 .idea/
 *.pyc
+analysis/result/
+.DS_Store

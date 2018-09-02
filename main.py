@@ -5,19 +5,22 @@
 # @Last Modified time: 2018-07-06 11:08:27
 
 import argparse
+import cPickle as pickle
 import copy
 import gc
+import logging
 import random
 import sys
 import time
+from datetime import date
 
-import cPickle as pickle
 import numpy as np
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
 import torch.optim as optim
 
+from analysis.utils.logTool import addLogSectionMark
 from model.bilstmcrf import BiLSTM_CRF as SeqModel
 from utils.data import Data
 from utils.metric import get_ner_fmeasure
@@ -26,6 +29,10 @@ seed_num = 100
 random.seed(seed_num)
 torch.manual_seed(seed_num)
 np.random.seed(seed_num)
+
+logging.basicConfig(filename="./analysis/log/{0}.txt".format(date.today().isoformat()),
+                    format='%(asctime)s *** %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def data_initialization(data, gaz_file, train_file, dev_file, test_file):
@@ -242,6 +249,7 @@ def batchify_with_label(input_batch_list, gpu, volatile_flag=False):
 
 
 def train(data, save_model_dir, seg=True):
+    addLogSectionMark("Start Training Model")
     print("Training model...")
     data.show_data_summary()
     save_data_name = save_model_dir + ".dset"
@@ -253,11 +261,12 @@ def train(data, save_model_dir, seg=True):
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = optim.SGD(parameters, lr=data.HP_lr, momentum=data.HP_momentum)
     best_dev = -1
-    data.HP_iteration = 100
+    data.HP_iteration = 50
     ## start training
     for idx in range(data.HP_iteration):
         epoch_start = time.time()
         temp_start = epoch_start
+        addLogSectionMark("Epoch Start: %s/%s" % (idx, data.HP_iteration))
         print("Epoch: %s/%s" % (idx, data.HP_iteration))
         optimizer = lr_decay(optimizer, idx, data.HP_lr_decay, data.HP_lr)
         instance_count = 0
@@ -303,6 +312,8 @@ def train(data, save_model_dir, seg=True):
                 temp_start = temp_time
                 print("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
                     end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
+                logger.info("Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
+                    end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
                 sys.stdout.flush()
                 sample_loss = 0
             if end % data.HP_batch_size == 0:
@@ -314,9 +325,14 @@ def train(data, save_model_dir, seg=True):
         temp_cost = temp_time - temp_start
         print("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
             end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
+        logger.info("Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
+            end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
         epoch_finish = time.time()
         epoch_cost = epoch_finish - epoch_start
         print("Epoch: %s training finished. Time: %.2fs, speed: %.2fst/s,  total loss: %s" % (
+            idx, epoch_cost, train_num / epoch_cost, total_loss))
+        addLogSectionMark("Epoch Summary")
+        logger.info("Epoch: %s training finished. Time: %.2fs, speed: %.2fst/s,  total loss: %s" % (
             idx, epoch_cost, train_num / epoch_cost, total_loss))
         # exit(0)
         # continue
@@ -328,9 +344,12 @@ def train(data, save_model_dir, seg=True):
             current_score = f
             print("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
                 dev_cost, speed, acc, p, r, f))
+            logger.info("Dev: time: %.2fs; speed: %.2fst/s; acc: %.4f; p: %.4f; r: %.4f; f: %.4f" % (
+                dev_cost, speed, acc, p, r, f))
         else:
             current_score = acc
             print("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f" % (dev_cost, speed, acc))
+            logger.info("Dev: time: %.2fs; speed: %.2fst/s; acc: %.4f" % (dev_cost, speed, acc))
 
         if current_score > best_dev:
             if seg:
@@ -349,8 +368,11 @@ def train(data, save_model_dir, seg=True):
         if seg:
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
                 test_cost, speed, acc, p, r, f))
+            logger.info("Test: time: %.2fs; speed: %.2fst/s; acc: %.4f; p: %.4f; r: %.4f; f: %.4f" % (
+                test_cost, speed, acc, p, r, f))
         else:
             print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (test_cost, speed, acc))
+            logger.info("Test: time: %.2fs; speed: %.2fst/s; acc: %.4f" % (test_cost, speed, acc))
         gc.collect()
 
 
@@ -368,6 +390,7 @@ def load_model(model_dir, data, gpu):
     # model = torch.load(model_dir)
     return model
 
+
 def parse_text(model, data, name, gpu, seg=True):
     print("Decode %s data ..." % (name))
     start_time = time.time()
@@ -381,6 +404,7 @@ def parse_text(model, data, name, gpu, seg=True):
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
 
     return pred_results
+
 
 def load_model_decode(model_dir, data, name, gpu, seg=True):
     data.HP_gpu = gpu
@@ -442,7 +466,7 @@ if __name__ == '__main__':
     gpu = torch.cuda.is_available()
 
     char_emb = "data/gigaword_chn.all.a2b.uni.ite50.vec"
-    bichar_emb = None
+    bichar_emb = "data/gigaword_chn.all.a2b.bi.ite50.vec"
     gaz_file = "data/ctb.50d.vec"
     # gaz_file = None
     # char_emb = None
@@ -450,7 +474,6 @@ if __name__ == '__main__':
 
     print
     "CuDNN:", torch.backends.cudnn.enabled
-    gpu = False
     print
     "GPU available:", gpu
     print

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python main.py --status train --train ./data/CommonNER/train-wop.txt --dev ./data/CommonNER/validation-wop.txt --test ./data/CommonNER/test-wop.txt --savemodel ./data/CommonNER/common-wop

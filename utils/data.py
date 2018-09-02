@@ -3,10 +3,11 @@
 # @Date:   2017-06-14 17:34:32
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
 # @Last Modified time: 2018-01-29 15:26:51
-import sys
 import math
+import sys
 
 from alphabet import Alphabet
+from analysis.utils.logTool import addLogSectionMark
 from functions import *
 from gazetteer import Gazetteer
 
@@ -14,6 +15,9 @@ START = "</s>"
 UNKNOWN = "</unk>"
 PADDING = "</pad>"
 NULLKEY = "-null-"
+PUNCTUATION_MARK = "#"
+
+logger = logging.getLogger(__name__)
 
 
 class Data:
@@ -21,6 +25,7 @@ class Data:
         self.MAX_SENTENCE_LENGTH = 250
         self.MAX_WORD_LENGTH = -1
         self.number_normalized = True
+        self.punctuation_filter = True
         self.norm_word_emb = True
         self.norm_biword_emb = True
         self.norm_gaz_emb = False
@@ -81,11 +86,13 @@ class Data:
         self.HP_momentum = 0
 
     def show_data_summary(self):
+        addLogSectionMark("DATA SUMMARY")
         print("DATA SUMMARY START:")
         print("     Tag          scheme: %s" % (self.tagScheme))
         print("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
         print("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
         print("     Number   normalized: %s" % (self.number_normalized))
+        print("     Punctuation  filter: %s" % (self.punctuation_filter))
         print("     Use          bigram: %s" % (self.use_bigram))
         print("     Word  alphabet size: %s" % (self.word_alphabet_size))
         print("     Biword alphabet size: %s" % (self.biword_alphabet_size))
@@ -118,8 +125,46 @@ class Data:
         print("     Hyperpara     use_gaz: %s" % (self.HP_use_gaz))
         print("     Hyperpara fix gaz emb: %s" % (self.HP_fix_gaz_emb))
         print("     Hyperpara    use_char: %s" % (self.HP_use_char))
+
+        logger.info("     Tag          scheme: %s" % (self.tagScheme))
+        logger.info("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
+        logger.info("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
+        logger.info("     Number   normalized: %s" % (self.number_normalized))
+        logger.info("     Use          bigram: %s" % (self.use_bigram))
+        logger.info("     Word  alphabet size: %s" % (self.word_alphabet_size))
+        logger.info("     Biword alphabet size: %s" % (self.biword_alphabet_size))
+        logger.info("     Char  alphabet size: %s" % (self.char_alphabet_size))
+        logger.info("     Gaz   alphabet size: %s" % (self.gaz_alphabet.size()))
+        logger.info("     Label alphabet size: %s" % (self.label_alphabet_size))
+        logger.info("     Word embedding size: %s" % (self.word_emb_dim))
+        logger.info("     Biword embedding size: %s" % (self.biword_emb_dim))
+        logger.info("     Char embedding size: %s" % (self.char_emb_dim))
+        logger.info("     Gaz embedding size: %s" % (self.gaz_emb_dim))
+        logger.info("     Norm     word   emb: %s" % (self.norm_word_emb))
+        logger.info("     Norm     biword emb: %s" % (self.norm_biword_emb))
+        logger.info("     Norm     gaz    emb: %s" % (self.norm_gaz_emb))
+        logger.info("     Norm   gaz  dropout: %s" % (self.gaz_dropout))
+        logger.info("     Train instance number: %s" % (len(self.train_texts)))
+        logger.info("     Dev   instance number: %s" % (len(self.dev_texts)))
+        logger.info("     Test  instance number: %s" % (len(self.test_texts)))
+        logger.info("     Raw   instance number: %s" % (len(self.raw_texts)))
+        logger.info("     Hyperpara  iteration: %s" % (self.HP_iteration))
+        logger.info("     Hyperpara  batch size: %s" % (self.HP_batch_size))
+        logger.info("     Hyperpara          lr: %s" % (self.HP_lr))
+        logger.info("     Hyperpara    lr_decay: %s" % (self.HP_lr_decay))
+        logger.info("     Hyperpara     HP_clip: %s" % (self.HP_clip))
+        logger.info("     Hyperpara    momentum: %s" % (self.HP_momentum))
+        logger.info("     Hyperpara  hidden_dim: %s" % (self.HP_hidden_dim))
+        logger.info("     Hyperpara     dropout: %s" % (self.HP_dropout))
+        logger.info("     Hyperpara  lstm_layer: %s" % (self.HP_lstm_layer))
+        logger.info("     Hyperpara      bilstm: %s" % (self.HP_bilstm))
+        logger.info("     Hyperpara         GPU: %s" % (self.HP_gpu))
+        logger.info("     Hyperpara     use_gaz: %s" % (self.HP_use_gaz))
+        logger.info("     Hyperpara fix gaz emb: %s" % (self.HP_fix_gaz_emb))
+        print("     Hyperpara    use_char: %s" % (self.HP_use_char))
         if self.HP_use_char:
             print("             Char_features: %s" % (self.char_features))
+            logger.info("             Char_features: %s" % (self.char_features))
         print("DATA SUMMARY END.")
         sys.stdout.flush()
 
@@ -160,10 +205,12 @@ class Data:
                 label = pairs[-1]
                 self.label_alphabet.add(label)
                 self.word_alphabet.add(word)
+
                 if idx < len(in_lines) - 1 and len(in_lines[idx + 1]) > 2:
                     biword = word + in_lines[idx + 1].strip().split()[0].decode('utf-8')
                 else:
                     biword = word + NULLKEY
+
                 self.biword_alphabet.add(biword)
                 for char in word:
                     self.char_alphabet.add(char)
@@ -282,12 +329,12 @@ class Data:
                                                                   self.biword_alphabet, self.char_alphabet,
                                                                   self.gaz_alphabet, self.label_alphabet,
                                                                   self.number_normalized, self.MAX_SENTENCE_LENGTH)
-      
+
         elif name == "sentence":
             self.raw_texts, self.raw_Ids = read_instance_with_gaz_text(input_file, self.gaz, self.word_alphabet,
-                                                                  self.biword_alphabet, self.char_alphabet,
-                                                                  self.gaz_alphabet, self.label_alphabet,
-                                                                  self.number_normalized, self.MAX_SENTENCE_LENGTH)
+                                                                       self.biword_alphabet, self.char_alphabet,
+                                                                       self.gaz_alphabet, self.label_alphabet,
+                                                                       self.number_normalized, self.MAX_SENTENCE_LENGTH)
         else:
             print("Error: you can only generate train/dev/test instance! Illegal input:%s" % (name))
 
@@ -331,40 +378,40 @@ class Data:
             print("Error: illegal name during writing predict result, name should be within train/dev/test/raw !")
 
         assert (sent_num == len(content_list))
-        result =[]
+        result = []
         for idx in range(sent_num):
             sent_length = len(predict_results[idx])
             for idy in range(sent_length):
                 ## content_list[idx] is a list with [word, char, label]
                 print(content_list[idx][0][idy].encode('utf-8') + " " + predict_results[idx][idy] + '\n')
-        
+
         for idx in range(sent_num):
             sent_length = len(predict_results[idx])
 
-            data = {'start': '', 'end': "", 'value': '','entity':''}
-            value=''
+            data = {'start': '', 'end': "", 'value': '', 'entity': ''}
+            value = ''
             for idy in range(sent_length):
                 pre_su_item = predict_results[idx][idy].split('-')
-                if  pre_su_item[0] == 'S':
+                if pre_su_item[0] == 'S':
                     data['start'] = str(idy)
-                    data['end'] = str(idy+1)
+                    data['end'] = str(idy + 1)
                     data['value'] = content_list[idx][0][idy].encode('utf-8')
                     data['entity'] = pre_su_item[1]
                     result.append(data)
-                    data = {'start': '', 'end': "", 'value': '','entity':''}
-                if  pre_su_item[0] == 'B':
+                    data = {'start': '', 'end': "", 'value': '', 'entity': ''}
+                if pre_su_item[0] == 'B':
                     data['start'] = str(idy)
-                    value= value + (content_list[idx][0][idy].encode('utf-8'))
-                if  pre_su_item[0] == 'E':
-                    value= value + (content_list[idx][0][idy].encode('utf-8'))
-                    data['end'] = str(idy+1)
+                    value = value + (content_list[idx][0][idy].encode('utf-8'))
+                if pre_su_item[0] == 'E':
+                    value = value + (content_list[idx][0][idy].encode('utf-8'))
+                    data['end'] = str(idy + 1)
                     data['value'] = value
                     data['entity'] = pre_su_item[1]
                     result.append(data)
-                    data = {'start': '', 'end': "", 'value': '','entity':''}
-                    value=''
-                if  pre_su_item[0] == 'I':
-                    value= value + (content_list[idx][0][idy].encode('utf-8'))
+                    data = {'start': '', 'end': "", 'value': '', 'entity': ''}
+                    value = ''
+                if pre_su_item[0] == 'I':
+                    value = value + (content_list[idx][0][idy].encode('utf-8'))
 
         return result
 
@@ -382,56 +429,50 @@ class Data:
             num_end_sentence = numOfParagram
         elif name == "dev":
             num_start_sentence = numOfParagram
-            num_end_sentence = numOfParagram*2
+            num_end_sentence = numOfParagram * 2
         elif name == "train":
-            num_start_sentence = numOfParagram*2
+            num_start_sentence = numOfParagram * 2
             num_end_sentence = get_num
 
-        for idx in range(num_start_sentence,num_end_sentence):
+        for idx in range(num_start_sentence, num_end_sentence):
             text = inputData[idx]["text"]
             entities = inputData[idx]["entities"]
 
             idText = 1
             inWord = False
             tagReady = False
-            entity_name =''
+            entity_name = ''
             for Text in text:
-                ## content_list[idx] is a list with [word, char, label] 
+                ## content_list[idx] is a list with [word, char, label]
                 tagReady = False
-                
+
                 for entity in entities:
                     if not inWord:
-                        if entity['start']+1 == entity['end'] and entity['end'] == idText:
-
-                            fout.write(Text.encode('utf-8') + " " + "S-"+ entity['entity'].encode('utf-8') +'\n')
+                        if entity['start'] + 1 == entity['end'] and entity['end'] == idText:
+                            fout.write(Text.encode('utf-8') + " " + "S-" + entity['entity'].encode('utf-8') + '\n')
                             tagReady = True
                             break
-                        if entity['start']+1 == idText:
-
-                            fout.write(Text.encode('utf-8') + " " + "B-"+ entity['entity'].encode('utf-8') + '\n')
+                        if entity['start'] + 1 == idText:
+                            fout.write(Text.encode('utf-8') + " " + "B-" + entity['entity'].encode('utf-8') + '\n')
                             tagReady = True
                             inWord = True
                             entity_name = entity['entity'].encode('utf-8')
                             break
                     else:
                         if entity['end'] == idText:
-
-                            fout.write(Text.encode('utf-8') + " " + "E-"+ entity_name + '\n')
+                            fout.write(Text.encode('utf-8') + " " + "E-" + entity_name + '\n')
                             tagReady = True
                             inWord = False
                             break
 
                 if not tagReady:
                     if not inWord:
-                        fout.write(Text.encode('utf-8') + " " + "O"+ '\n')
+                        fout.write(Text.encode('utf-8') + " " + "O" + '\n')
                     else:
-                        fout.write(Text.encode('utf-8') + " " + "I-"+ entity_name +'\n')
+                        fout.write(Text.encode('utf-8') + " " + "I-" + entity_name + '\n')
 
-                idText=idText+1
+                idText = idText + 1
             fout.write('\n')
         fout.close()
 
-        print("Predict input data has been written into file. %s" % ( output_file))
-
-       
-        
+        print("Predict input data has been written into file. %s" % (output_file))
