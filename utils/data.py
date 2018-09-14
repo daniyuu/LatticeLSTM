@@ -25,7 +25,7 @@ class Data:
         self.MAX_SENTENCE_LENGTH = 250
         self.MAX_WORD_LENGTH = -1
         self.number_normalized = True
-        self.punctuation_filter = True
+        # self.punctuation_filter = True
         self.norm_word_emb = True
         self.norm_biword_emb = True
         self.norm_gaz_emb = False
@@ -92,7 +92,7 @@ class Data:
         print("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
         print("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
         print("     Number   normalized: %s" % (self.number_normalized))
-        print("     Punctuation  filter: %s" % (self.punctuation_filter))
+        # print("     Punctuation  filter: %s" % (self.punctuation_filter))
         print("     Use          bigram: %s" % (self.use_bigram))
         print("     Word  alphabet size: %s" % (self.word_alphabet_size))
         print("     Biword alphabet size: %s" % (self.biword_alphabet_size))
